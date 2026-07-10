@@ -3,31 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MotoRace 300 - Ganhe uma Moto!</title>
+    <title>MotoRace 300 - Campanha</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #111; color: #fff; margin: 0; padding: 0; }
-        header { background: linear-gradient(#ff4500, #cc0000); padding: 20px; text-align: center; }
-        nav { margin-top: 10px; }
-        nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
-        .hero { text-align: center; padding: 80px 20px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://source.unsplash.com/random/1200x500/?motorcycle') center/cover; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
-        .card { background: #222; padding: 25px; border-radius: 12px; margin: 20px 0; }
-        button { background: #ff4500; color: white; border: none; padding: 14px 24px; margin: 8px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #ff6500; }
-        .progress { height: 28px; background: #333; border-radius: 999px; overflow: hidden; margin: 12px 0; }
-        .progress-bar { height: 100%; background: linear-gradient(#ff4500, #ffaa00); transition: width 0.6s; }
-        .tab { display: none; }
-        .active { display: block; }
+        :root {
+            --primary: #ff4500;
+            --dark: #0a0a0a;
+            --card: #1a1a1a;
+        }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(#0a0a0a, #1a1a1a); 
+            color: #eee; 
+            margin: 0; 
+            padding: 0; 
+        }
+        header { 
+            background: linear-gradient(135deg, #ff4500, #ff6b00); 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px rgba(255,69,0,0.4);
+        }
+        nav a { 
+            color: white; margin: 0 18px; text-decoration: none; font-weight: bold; 
+        }
+        .hero { 
+            text-align: center; padding: 90px 20px; 
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+                        url('https://source.unsplash.com/random/1600x700/?motorcycle,racing') center/cover;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card { 
+            background: var(--card); 
+            padding: 28px; 
+            border-radius: 16px; 
+            margin: 20px 0; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+        button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 14px 26px; 
+            margin: 8px 6px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: all 0.3s;
+        }
+        button:hover { background: #ff6b00; transform: translateY(-2px); }
+        .progress { height: 30px; background: #333; border-radius: 999px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff4500, #ffaa00); transition: width 0.6s ease; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 14px; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #222; }
+        .admin { background: #2a2a2a; border: 2px solid #ff4500; }
     </style>
 </head>
 <body>
     <header>
-        <h1>🏍️ MotoRace 300 - Campanha Gamificada</h1>
+        <h1>🏍️ MotoRace 300 - Campanha de Vendas</h1>
         <nav>
             <a href="#" onclick="showTab('home')">Início</a>
+            <a href="#" onclick="showTab('ranking')">Ranking</a>
             <a href="#" onclick="showTab('perfil')">Perfil</a>
-            <a href="#" onclick="showTab('desafios')">Desafios</a>
-            <a href="#" onclick="showTab('regras')">Regras</a>
+            <a href="#" onclick="showTab('admin')">👑 Admin</a>
         </nav>
     </header>
 
@@ -37,25 +76,13 @@
             <h2>Quanto mais você vende, mais perto da Moto 300cc!</h2>
             <button onclick="login()">Entrar na Campanha</button>
         </div>
+    </div>
 
-        <div class="container" id="dashboard" style="display:none;">
-            <div class="card">
-                <h2>Olá, <span id="username"></span>! 🏆</h2>
-                <p>Pontos: <strong id="points">0</strong> | Nível: <span id="level">1</span></p>
-                <div class="progress"><div id="progress" class="progress-bar"></div></div>
-            </div>
-
-            <div class="card">
-                <h3>Ações para Ganhar Pontos</h3>
-                <button onclick="earnPoints(50)">Venda Simples (+50)</button>
-                <button onclick="earnPoints(120)">Venda Grande (+120)</button>
-                <button onclick="earnPoints(30)">Indicação (+30)</button>
-            </div>
-
-            <div class="card">
-                <h3>🎰 Roleta da Moto</h3>
-                <button onclick="spinWheel()">Girar Roleta (100 pts)</button>
-            </div>
+    <!-- RANKING -->
+    <div id="ranking" class="tab container">
+        <div class="card">
+            <h2>🏆 Ranking Geral</h2>
+            <table id="ranking-table"></table>
         </div>
     </div>
 
@@ -64,89 +91,111 @@
         <div class="card">
             <h2>Meu Perfil</h2>
             <p><strong>Nome:</strong> <span id="perfil-name"></span></p>
-            <p><strong>Total de Pontos:</strong> <span id="perfil-points"></span></p>
-            <p><strong>Nível Atual:</strong> <span id="perfil-level"></span></p>
-            <button onclick="shareCampaign()">Compartilhar Campanha</button>
+            <p><strong>Pontos:</strong> <span id="perfil-points"></span></p>
+            <p><strong>Nível:</strong> <span id="perfil-level"></span></p>
+            <button onclick="earnPoints(50)">+50 pts (Venda)</button>
+            <button onclick="spinWheel()">🎰 Girar Roleta</button>
         </div>
     </div>
 
-    <!-- DESAFIOS -->
-    <div id="desafios" class="tab container">
-        <div class="card">
-            <h2>Desafios Diários</h2>
-            <button onclick="completeChallenge(80)">Fechar 3 Vendas Hoje (+80 pts)</button>
-            <button onclick="completeChallenge(50)">Postar nas Redes (+50 pts)</button>
-        </div>
-    </div>
-
-    <!-- REGRAS -->
-    <div id="regras" class="tab container">
-        <div class="card">
-            <h2>Regras da Campanha</h2>
-            <p>• Cada venda gera pontos</p>
-            <p>• O maior pontuador ou vencedor da roleta ganha a Moto 300cc</p>
-            <p>• Campanha termina em 30 dias</p>
-            <p>Boa sorte e boas vendas! 🏍️</p>
+    <!-- ADMIN -->
+    <div id="admin" class="tab container">
+        <div class="card admin">
+            <h2>👑 Painel do Administrador</h2>
+            <input type="text" id="new-name" placeholder="Nome do vendedor" style="padding:10px; width:60%;">
+            <button onclick="addSeller()">Adicionar Vendedor</button>
+            
+            <h3>Lista de Vendedores</h3>
+            <div id="seller-list"></div>
         </div>
     </div>
 
     <script>
-        let user = { name: "", points: 0, level: 1 };
+        let users = JSON.parse(localStorage.getItem('motoUsers')) || [
+            {name: "João Silva", points: 1250},
+            {name: "Maria Santos", points: 980},
+            {name: "Pedro Costa", points: 670}
+        ];
+        let currentUser = null;
+
+        function saveUsers() {
+            localStorage.setItem('motoUsers', JSON.stringify(users));
+        }
 
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tab).classList.add('active');
+            if (tab === 'ranking') updateRanking();
             if (tab === 'perfil') updatePerfil();
+            if (tab === 'admin') updateSellerList();
         }
 
         function login() {
-            user.name = prompt("Qual seu nome?") || "Vendedor";
-            document.getElementById("dashboard").style.display = "block";
-            document.getElementById("username").textContent = user.name;
-            showTab('home');
-            updateUI();
+            const name = prompt("Digite seu nome:");
+            if (!name) return;
+            currentUser = users.find(u => u.name === name) || {name, points: 0};
+            if (!users.includes(currentUser)) users.push(currentUser);
+            showTab('perfil');
         }
 
-        function updateUI() {
-            document.getElementById("points").textContent = user.points;
-            document.getElementById("level").textContent = user.level;
-            const progress = Math.min(((user.points % 500) / 5), 100);
-            document.getElementById("progress").style.width = progress + "%";
+        function updateRanking() {
+            const tbody = document.getElementById('ranking-table');
+            tbody.innerHTML = `<tr><th>Posição</th><th>Vendedor</th><th>Pontos</th></tr>`;
+            const sorted = [...users].sort((a,b) => b.points - a.points);
+            sorted.forEach((u, i) => {
+                tbody.innerHTML += `<tr><td>#\( {i+1}</td><td> \){u.name}</td><td><strong>${u.points}</strong></td></tr>`;
+            });
         }
 
         function updatePerfil() {
-            document.getElementById("perfil-name").textContent = user.name || "Não logado";
-            document.getElementById("perfil-points").textContent = user.points;
-            document.getElementById("perfil-level").textContent = user.level;
+            if (!currentUser) return;
+            document.getElementById('perfil-name').textContent = currentUser.name;
+            document.getElementById('perfil-points').textContent = currentUser.points;
+            document.getElementById('perfil-level').textContent = Math.floor(currentUser.points / 500) + 1;
         }
 
         function earnPoints(pts) {
-            user.points += pts;
-            if (user.points >= user.level * 500) user.level++;
-            updateUI();
-            alert(`+${pts} pontos! Continue assim!`);
-        }
-
-        function completeChallenge(pts) {
-            earnPoints(pts);
+            if (!currentUser) return alert("Faça login primeiro!");
+            currentUser.points += pts;
+            saveUsers();
+            updatePerfil();
+            updateRanking();
+            alert(`+${pts} pontos!`);
         }
 
         function spinWheel() {
-            if (user.points < 100) return alert("Precisa de 100 pontos!");
-            user.points -= 100;
-            const prizes = ["Moto 300cc! 🎉", "Capacete Premium", "R$ 500", "Nada dessa vez", "+300 pontos"];
-            const win = prizes[Math.floor(Math.random() * prizes.length)];
+            if (!currentUser || currentUser.points < 100) return alert("100 pontos necessários!");
+            currentUser.points -= 100;
+            const prizes = ["Moto 300cc! 🎉", "Capacete Top", "R$500", "Nada", "+300 pts"];
+            const win = prizes[Math.floor(Math.random()*prizes.length)];
             alert("Você ganhou: " + win);
-            if (win.includes("Moto")) alert("🏆 PARABÉNS! Você ganhou a Moto 300cc!");
-            updateUI();
+            if (win.includes("Moto")) alert("🏆 VENCEDOR DA MOTO 300cc!");
+            saveUsers();
+            updatePerfil();
+            updateRanking();
         }
 
-        function shareCampaign() {
-            alert("Compartilhe este link: https://seusite.com/motorace (link da campanha)");
+        // Admin Functions
+        function addSeller() {
+            const name = document.getElementById('new-name').value.trim();
+            if (!name) return alert("Digite um nome");
+            if (users.find(u => u.name === name)) return alert("Já existe");
+            users.push({name, points: 0});
+            saveUsers();
+            updateSellerList();
+            document.getElementById('new-name').value = '';
         }
 
-        // Inicia na Home
-        updateUI();
+        function updateSellerList() {
+            const div = document.getElementById('seller-list');
+            div.innerHTML = '';
+            users.forEach(u => {
+                div.innerHTML += `<p>${u.name} — ${u.points} pts</p>`;
+            });
+        }
+
+        // Inicializa
+        updateRanking();
     </script>
 </body>
 </html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoRace 300 - Ganhe uma Moto!</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111; color: #fff; margin: 0; padding: 0; }
+        header { background: linear-gradient(#ff4500, #cc0000); padding: 20px; text-align: center; }
+        nav { margin-top: 10px; }
+        nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        .hero { text-align: center; padding: 80px 20px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://source.unsplash.com/random/1200x500/?motorcycle') center/cover; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .card { background: #222; padding: 25px; border-radius: 12px; margin: 20px 0; }
+        button { background: #ff4500; color: white; border: none; padding: 14px 24px; margin: 8px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #ff6500; }
+        .progress { height: 28px; background: #333; border-radius: 999px; overflow: hidden; margin: 12px 0; }
+        .progress-bar { height: 100%; background: linear-gradient(#ff4500, #ffaa00); transition: width 0.6s; }
+        .tab { display: none; }
+        .active { display: block; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏍️ MotoRace 300 - Campanha Gamificada</h1>
+        <nav>
+            <a href="#" onclick="showTab('home')">Início</a>
+            <a href="#" onclick="showTab('perfil')">Perfil</a>
+            <a href="#" onclick="showTab('desafios')">Desafios</a>
+            <a href="#" onclick="showTab('regras')">Regras</a>
+        </nav>
+    </header>
+
+    <!-- HOME -->
+    <div id="home" class="tab active">
+        <div class="hero">
+            <h2>Quanto mais você vende, mais perto da Moto 300cc!</h2>
+            <button onclick="login()">Entrar na Campanha</button>
+        </div>
+
+        <div class="container" id="dashboard" style="display:none;">
+            <div class="card">
+                <h2>Olá, <span id="username"></span>! 🏆</h2>
+                <p>Pontos: <strong id="points">0</strong> | Nível: <span id="level">1</span></p>
+                <div class="progress"><div id="progress" class="progress-bar"></div></div>
+            </div>
+
+            <div class="card">
+                <h3>Ações para Ganhar Pontos</h3>
+                <button onclick="earnPoints(50)">Venda Simples (+50)</button>
+                <button onclick="earnPoints(120)">Venda Grande (+120)</button>
+                <button onclick="earnPoints(30)">Indicação (+30)</button>
+            </div>
+
+            <div class="card">
+                <h3>🎰 Roleta da Moto</h3>
+                <button onclick="spinWheel()">Girar Roleta (100 pts)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div id="perfil" class="tab container">
+        <div class="card">
+            <h2>Meu Perfil</h2>
+            <p><strong>Nome:</strong> <span id="perfil-name"></span></p>
+            <p><strong>Total de Pontos:</strong> <span id="perfil-points"></span></p>
+            <p><strong>Nível Atual:</strong> <span id="perfil-level"></span></p>
+            <button onclick="shareCampaign()">Compartilhar Campanha</button>
+        </div>
+    </div>
+
+    <!-- DESAFIOS -->
+    <div id="desafios" class="tab container">
+        <div class="card">
+            <h2>Desafios Diários</h2>
+            <button onclick="completeChallenge(80)">Fechar 3 Vendas Hoje (+80 pts)</button>
+            <button onclick="completeChallenge(50)">Postar nas Redes (+50 pts)</button>
+        </div>
+    </div>
+
+    <!-- REGRAS -->
+    <div id="regras" class="tab container">
+        <div class="card">
+            <h2>Regras da Campanha</h2>
+            <p>• Cada venda gera pontos</p>
+            <p>• O maior pontuador ou vencedor da roleta ganha a Moto 300cc</p>
+            <p>• Campanha termina em 30 dias</p>
+            <p>Boa sorte e boas vendas! 🏍️</p>
+        </div>
+    </div>
+
+    <script>
+        let user = { name: "", points: 0, level: 1 };
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            if (tab === 'perfil') updatePerfil();
+        }
+
+        function login() {
+            user.name = prompt("Qual seu nome?") || "Vendedor";
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("username").textContent = user.name;
+            showTab('home');
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById("points").textContent = user.points;
+            document.getElementById("level").textContent = user.level;
+            const progress = Math.min(((user.points % 500) / 5), 100);
+            document.getElementById("progress").style.width = progress + "%";
+        }
+
+        function updatePerfil() {
+            document.getElementById("perfil-name").textContent = user.name || "Não logado";
+            document.getElementById("perfil-points").textContent = user.points;
+            document.getElementById("perfil-level").textContent = user.level;
+        }
+
+        function earnPoints(pts) {
+            user.points += pts;
+            if (user.points >= user.level * 500) user.level++;
+            updateUI();
+            alert(`+${pts} pontos! Continue assim!`);
+        }
+
+        function completeChallenge(pts) {
+            earnPoints(pts);
+        }
+
+        function spinWheel() {
+            if (user.points < 100) return alert("Precisa de 100 pontos!");
+            user.points -= 100;
+            const prizes = ["Moto 300cc! 🎉", "Capacete Premium", "R$ 500", "Nada dessa vez", "+300 pontos"];
+            const win = prizes[Math.floor(Math.random() * prizes.length)];
+            alert("Você ganhou: " + win);
+            if (win.includes("Moto")) alert("🏆 PARABÉNS! Você ganhou a Moto 300cc!");
+            updateUI();
+        }
+
+        function shareCampaign() {
+            alert("Compartilhe este link: https://seusite.com/motorace (link da campanha)");
+        }
+
+        // Inicia na Home
+        updateUI();
+    </script>
+</body>
+</html>

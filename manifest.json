@@ -1,14 +1,1 @@
-{
-  "name": "Arena XP — Ranking & Gamificação",
-  "short_name": "Arena XP",
-  "description": "Ranking, performance e gamificação da campanha BMW X1 2012.",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#070707",
-  "theme_color": "#070707",
-  "orientation": "portrait-primary",
-  "icons": [
-    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
-  ]
-}
+{"name":"Arena XP — Ranking & Gamificação","short_name":"Arena XP","start_url":"./","scope":"./","display":"standalone","background_color":"#070707","theme_color":"#070707","orientation":"portrait-primary","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

@@ -9,9 +9,22 @@ create table if not exists public.xp_sales (
   closer text,
   vgv numeric not null default 0,
   status text,
+  status_atendimento text,
+  qualificacao text,
+  renda numeric not null default 0,
+  entrada numeric not null default 0,
+  nome1 text,
+  nome2 text,
   source_key text unique,
   created_at timestamptz not null default now()
 );
+
+alter table public.xp_sales add column if not exists status_atendimento text;
+alter table public.xp_sales add column if not exists qualificacao text;
+alter table public.xp_sales add column if not exists renda numeric not null default 0;
+alter table public.xp_sales add column if not exists entrada numeric not null default 0;
+alter table public.xp_sales add column if not exists nome1 text;
+alter table public.xp_sales add column if not exists nome2 text;
 
 create table if not exists public.xp_adjustments (
   person_id text primary key,

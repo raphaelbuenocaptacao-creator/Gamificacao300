@@ -1,0 +1,11 @@
+/* Carrega automaticamente a base 123.csv do GitHub na primeira abertura. */
+(()=>{
+'use strict';
+const START='2026-07-01';
+const URL='https://raw.githubusercontent.com/raphaelbuenocaptacao-creator/Gamificacao300/main/123.csv';
+const key=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ').toUpperCase(); 
+function parse(text){const first=text.split(/\r?\n/,1)[0]||'';const delim=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';let rows=[],row=[],cell='',q=false;for(let i=0;i<text.length;i++){const c=text[i],nx=text[i+1];if(c==='"'&&q&&nx==='"'){cell+='"';i++;continue}if(c==='"'){q=!q;continue}if(c===delim&&!q){row.push(cell);cell='';continue}if((c==='\n'||c==='\r')&&!q){if(c==='\r'&&nx==='\n')i++;row.push(cell);if(row.some(x=>x.trim()))rows.push(row);row=[];cell='';continue}cell+=c}if(cell||row.length){row.push(cell);rows.push(row)}return rows}
+function date(v){let s=String(v||'').trim(),m=s.match(/(\d{2})[\/-](\d{2})[\/-](\d{4})/);return m?`${m[3]}-${m[2]}-${m[1]}`:(/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):'')}
+function money(v){return Number(String(v||'0').replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'))||0}
+fetch(URL).then(r=>r.text()).then(text=>{const rows=parse(text);if(!rows.length)return;const h=rows.shift().map(x=>key(String(x).replace(/^\uFEFF/,'')));const out=rows.map((r,i)=>{const o=Object.fromEntries(h.map((x,j)=>[x,String(r[j]??'').trim()]));const get=(...names)=>{for(const name of names){const v=o[key(name)];if(v!==undefined)return v}return ''};const d=date(get('DATA DE ATENDIMENTO','DATA/HORA DO CADASTRO'));return{sale_date:d,captador:get('CAPTADOR','PROMOTOR DE MARKETING'),promoter:get('PROMOTOR DE MARKETING'),liner:get('LINER'),closer:get('CLOSER'),vgv:money(get('VALOR VENDIDO')),status:get('STATUS DO CONTRATO'),source_key:[i,d,get('NOME 1'),get('NOME 2'),get('VALOR VENDIDO')].join('|')}}).filter(x=>x.sale_date>=START);if(out.length)localStorage.setItem('arena_sales',JSON.stringify(out));}).catch(()=>{});
+})();

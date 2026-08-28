@@ -19,4 +19,15 @@ fetch(URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('CSV '+r.status);ret
  localStorage.setItem('arena_base_info',JSON.stringify({source:'123.csv',start:START,loadedAt:new Date().toISOString(),records:out.length}));
  window.dispatchEvent(new CustomEvent('arena-base-ready',{detail:{records:out.length}}));
 }).catch(e=>{console.error('Arena base:',e);window.dispatchEvent(new CustomEvent('arena-base-error',{detail:{message:e.message}}));});
+
+// PWA bootstrap: liga o manifest ao documento e registra o service worker somente em contexto seguro.
+if(!document.querySelector('link[rel="manifest"]')){
+ const manifest=document.createElement('link');
+ manifest.rel='manifest';
+ manifest.href='./manifest.webmanifest';
+ document.head.appendChild(manifest);
+}
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(err=>console.warn('PWA SW:',err)));
+}
 })();

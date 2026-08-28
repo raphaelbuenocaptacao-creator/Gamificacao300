@@ -1,5 +1,5 @@
-const CACHE='arena-xp-v3';
-const APP_SHELL=['./','./index.html','./data.js','./manifest.json','./icon-192.svg','./icon-512.svg'];
+const CACHE='arena-xp-v4';
+const APP_SHELL=['./','./index.html','./data.js','./manifest.webmanifest','./icon-192.svg','./icon-512.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
@@ -13,8 +13,9 @@ function isSafeStatic(request,url){
   if(request.method!=='GET') return false;
   if(request.headers.has('authorization')) return false;
   if(url.origin!==self.location.origin) return false;
-  if(url.pathname.includes('/api/') || url.pathname.includes('/auth') || url.pathname.includes('/admin')) return false;
-  return ['document','script','style','image','font'].includes(request.destination) || url.pathname.endsWith('.json');
+  const path=url.pathname.toLowerCase();
+  if(path.includes('/api/') || path.includes('/auth') || path.includes('/login') || path.includes('/admin') || path.includes('/session') || path.includes('/token')) return false;
+  return ['document','script','style','image','font','manifest'].includes(request.destination) || path.endsWith('.json') || path.endsWith('.webmanifest');
 }
 
 self.addEventListener('fetch',event=>{

@@ -28,6 +28,11 @@ if(!document.querySelector('link[rel="manifest"]')){
  document.head.appendChild(manifest);
 }
 if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
- window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(err=>console.warn('PWA SW:',err)));
+ window.addEventListener('load',async()=>{
+  try{
+   const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+   await registration.update();
+  }catch(err){console.warn('PWA SW:',err)}
+ });
 }
 })();

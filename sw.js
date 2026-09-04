@@ -1,5 +1,5 @@
 const CACHE_PREFIX='arena-xp-';
-const CACHE=`${CACHE_PREFIX}v7-safe-shell`;
+const CACHE=`${CACHE_PREFIX}v8-safe-shell`;
 const APP_SHELL=['./','./index.html','./data.js','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
 const PRIVATE_PATH=/\/(api|auth|login|logout|admin|session|sessions|token|tokens|account|profile|user|users|me)(\/|$)/i;
 const SENSITIVE_QUERY=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|api_key|apikey|key|code|credential|credentials)$/i;
@@ -13,12 +13,14 @@ function isPrivateRequest(request,url){
   if(request.method!=='GET') return true;
   if(url.origin!==self.location.origin) return true;
   if(request.headers.has('authorization')||request.headers.has('cookie')) return true;
+  if(request.headers.has('range')||request.headers.has('if-range')) return true;
   if(PRIVATE_PATH.test(url.pathname)||hasSensitiveQuery(url)) return true;
   return false;
 }
 
 function isSafeResponse(response){
-  if(!response||!response.ok||response.status===206||response.type!=='basic') return false;
+  if(!response||!response.ok||response.status===206||response.type!=='basic'||response.redirected) return false;
+  if(response.headers.has('content-range')) return false;
   const cacheControl=(response.headers.get('cache-control')||'').toLowerCase();
   if(cacheControl.includes('private')||cacheControl.includes('no-store')) return false;
   if(response.headers.has('set-cookie')) return false;
@@ -35,7 +37,7 @@ async function precacheShell(){
   const cache=await caches.open(CACHE);
   await Promise.all(APP_SHELL.map(async asset=>{
     try{
-      const request=new Request(asset,{credentials:'omit',cache:'reload'});
+      const request=new Request(asset,{credentials:'omit',cache:'reload',redirect:'error'});
       const response=await fetch(request);
       if(isSafeResponse(response)) await cache.put(request,response.clone());
     }catch(error){
@@ -63,7 +65,7 @@ self.addEventListener('fetch',event=>{
 
   if(request.mode==='navigate'){
     event.respondWith(
-      fetch(request,{cache:'no-store'}).catch(async()=>{
+      fetch(request,{cache:'no-store',redirect:'error'}).catch(async()=>{
         const cache=await caches.open(CACHE);
         return (await cache.match('./index.html'))||Response.error();
       })
@@ -78,7 +80,7 @@ self.addEventListener('fetch',event=>{
     const cache=await caches.open(CACHE);
     const cached=await cache.match(asset);
     if(cached) return cached;
-    const response=await fetch(request,{cache:'no-cache',credentials:'omit'});
+    const response=await fetch(request,{cache:'no-cache',credentials:'omit',redirect:'error'});
     if(isSafeResponse(response)) await cache.put(asset,response.clone());
     return response;
   })());

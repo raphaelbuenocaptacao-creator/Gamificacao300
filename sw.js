@@ -1,6 +1,6 @@
 const CACHE_PREFIX='arena-xp-';
-const CACHE=`${CACHE_PREFIX}v8-safe-shell`;
-const APP_SHELL=['./','./index.html','./data.js','./manifest.webmanifest','./icon-192.svg','./icon-512.svg','./icon-512-maskable.svg'];
+const CACHE=`${CACHE_PREFIX}v9-raster-safe-shell`;
+const APP_SHELL=['./','./index.html','./data.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png'];
 const PRIVATE_PATH=/\/(api|auth|login|logout|admin|session|sessions|token|tokens|account|profile|user|users|me)(\/|$)/i;
 const SENSITIVE_QUERY=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|api_key|apikey|key|code|credential|credentials)$/i;
 

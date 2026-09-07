@@ -1,5 +1,5 @@
 const CACHE_PREFIX='arena-xp-';
-const CACHE=`${CACHE_PREFIX}v9-raster-safe-shell`;
+const CACHE=`${CACHE_PREFIX}v10-private-vary-safe-shell`;
 const APP_SHELL=['./','./index.html','./data.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png'];
 const PRIVATE_PATH=/\/(api|auth|login|logout|admin|session|sessions|token|tokens|account|profile|user|users|me)(\/|$)/i;
 const SENSITIVE_QUERY=/^(token|access_token|refresh_token|password|passwd|secret|session|auth|authorization|api_key|apikey|key|code|credential|credentials)$/i;
@@ -18,12 +18,21 @@ function isPrivateRequest(request,url){
   return false;
 }
 
+function variesPrivate(response){
+  const vary=(response.headers.get('vary')||'').toLowerCase();
+  return vary.split(',').some(value=>{
+    const key=value.trim();
+    return key==='cookie'||key==='authorization';
+  });
+}
+
 function isSafeResponse(response){
   if(!response||!response.ok||response.status===206||response.type!=='basic'||response.redirected) return false;
   if(response.headers.has('content-range')) return false;
   const cacheControl=(response.headers.get('cache-control')||'').toLowerCase();
   if(cacheControl.includes('private')||cacheControl.includes('no-store')) return false;
   if(response.headers.has('set-cookie')) return false;
+  if(variesPrivate(response)) return false;
   return true;
 }
 

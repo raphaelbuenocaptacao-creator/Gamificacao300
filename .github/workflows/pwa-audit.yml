@@ -1,0 +1,51 @@
+name: Arena XP PWA Audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest and PWA files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f manifest.webmanifest
+          test -f sw.js
+          test -f icon-192.png
+          test -f icon-512.png
+          test -f icon-512-maskable.png
+          node - <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+          for (const key of ['name','short_name','start_url','scope','display','theme_color','background_color','icons']) {
+            if (!m[key]) throw new Error(`manifest missing ${key}`);
+          }
+          if (m.display !== 'standalone') throw new Error('manifest display must be standalone');
+          const icons = m.icons || [];
+          if (!icons.some(i => i.sizes === '192x192' && i.type === 'image/png')) throw new Error('missing 192x192 PNG');
+          if (!icons.some(i => i.sizes === '512x512' && i.type === 'image/png')) throw new Error('missing 512x512 PNG');
+          if (!icons.some(i => i.sizes === '512x512' && String(i.purpose || '').includes('maskable'))) throw new Error('missing 512x512 maskable icon');
+          NODE
+      - name: Validate safe cache policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qi "authorization" sw.js
+          grep -qi "cookie" sw.js
+          grep -qi "request.headers.has('range')" sw.js
+          grep -qi "request.headers.has('if-range')" sw.js
+          grep -qi "content-range" sw.js
+          grep -Eq "key==='range'|key === 'range'" sw.js
+          grep -Eq "key==='if-range'|key === 'if-range'" sw.js
+          grep -qi "no-store" sw.js
+          grep -qi "private" sw.js
+          grep -qi "CACHE_PREFIX" sw.js
+          grep -qi "updateViaCache:'none'\|updateViaCache: 'none'\|updateViaCache:\"none\"" index.html

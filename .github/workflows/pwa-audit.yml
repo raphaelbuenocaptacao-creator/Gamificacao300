@@ -49,3 +49,10 @@ jobs:
           grep -qi "private" sw.js
           grep -qi "CACHE_PREFIX" sw.js
           grep -qi "updateViaCache:'none'\|updateViaCache: 'none'\|updateViaCache:\"none\"" index.html
+      - name: Validate service worker version alignment
+        shell: bash
+        run: |
+          set -euo pipefail
+          SW_VERSION=$(grep "const CACHE=" sw.js | grep -oE 'v[0-9]+[-A-Za-z0-9._]*' | head -1)
+          test -n "$SW_VERSION"
+          grep -Fq "sw.js?v=${SW_VERSION}" index.html

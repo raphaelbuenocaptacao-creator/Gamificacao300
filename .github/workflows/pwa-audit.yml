@@ -2,7 +2,7 @@ name: Arena XP PWA Audit
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'pwa/**']
   workflow_dispatch:
 
 permissions:
@@ -56,3 +56,24 @@ jobs:
           SW_VERSION=$(grep "const CACHE=" sw.js | grep -oE 'v[0-9]+[-A-Za-z0-9._]*' | head -1)
           test -n "$SW_VERSION"
           grep -Fq "sw.js?v=${SW_VERSION}" index.html
+      - name: Validate offline shell completeness
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const sw = fs.readFileSync('sw.js', 'utf8');
+          const localScripts = [...html.matchAll(/<script\s+src=["']([^"']+)["']/gi)]
+            .map(m => m[1])
+            .filter(src => !/^(?:https?:)?\/\//i.test(src))
+            .map(src => src.startsWith('./') ? src : `./${src.replace(/^\//,'')}`);
+          const match = sw.match(/const APP_SHELL=\[([\s\S]*?)\];/);
+          if (!match) throw new Error('APP_SHELL not found');
+          const shell = match[1];
+          for (const script of localScripts) {
+            if (!shell.includes(`'${script}'`) && !shell.includes(`"${script}"`)) {
+              throw new Error(`offline shell missing ${script}`);
+            }
+          }
+          NODE

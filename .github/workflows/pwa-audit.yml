@@ -2,7 +2,7 @@ name: Arena XP PWA Audit
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'pwa/**']
   workflow_dispatch:
 
 permissions:
@@ -56,3 +56,9 @@ jobs:
           SW_VERSION=$(grep "const CACHE=" sw.js | grep -oE 'v[0-9]+[-A-Za-z0-9._]*' | head -1)
           test -n "$SW_VERSION"
           grep -Fq "sw.js?v=${SW_VERSION}" index.html
+      - name: Validate secure service worker registration context
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq "location\.protocol\s*===\s*['\"]https:['\"]" index.html
+          grep -Eq "location\.hostname\s*===\s*['\"]localhost['\"]" index.html

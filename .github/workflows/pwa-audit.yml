@@ -64,7 +64,10 @@ jobs:
           const fs = require('fs');
           const html = fs.readFileSync('index.html', 'utf8');
           const sw = fs.readFileSync('sw.js', 'utf8');
-          const localScripts = [...html.matchAll(/<script\s+src=["'](\.\/[^"']+)["']/gi)].map(m => m[1]);
+          const localScripts = [...html.matchAll(/<script\s+src=["']([^"']+)["']/gi)]
+            .map(m => m[1])
+            .filter(src => !/^(?:https?:)?\/\//i.test(src))
+            .map(src => src.startsWith('./') ? src : `./${src.replace(/^\//,'')}`);
           const match = sw.match(/const APP_SHELL=\[([\s\S]*?)\];/);
           if (!match) throw new Error('APP_SHELL not found');
           const shell = match[1];

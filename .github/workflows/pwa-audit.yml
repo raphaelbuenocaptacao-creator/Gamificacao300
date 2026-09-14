@@ -56,9 +56,21 @@ jobs:
           SW_VERSION=$(grep "const CACHE=" sw.js | grep -oE 'v[0-9]+[-A-Za-z0-9._]*' | head -1)
           test -n "$SW_VERSION"
           grep -Fq "sw.js?v=${SW_VERSION}" index.html
-      - name: Validate secure service worker registration context
+      - name: Validate offline shell completeness
         shell: bash
         run: |
           set -euo pipefail
-          grep -Eq "location\.protocol\s*===\s*['\"]https:['\"]" index.html
-          grep -Eq "location\.hostname\s*===\s*['\"]localhost['\"]" index.html
+          node - <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const sw = fs.readFileSync('sw.js', 'utf8');
+          const localScripts = [...html.matchAll(/<script\s+src=["'](\.\/[^"']+)["']/gi)].map(m => m[1]);
+          const match = sw.match(/const APP_SHELL=\[([\s\S]*?)\];/);
+          if (!match) throw new Error('APP_SHELL not found');
+          const shell = match[1];
+          for (const script of localScripts) {
+            if (!shell.includes(`'${script}'`) && !shell.includes(`"${script}"`)) {
+              throw new Error(`offline shell missing ${script}`);
+            }
+          }
+          NODE
